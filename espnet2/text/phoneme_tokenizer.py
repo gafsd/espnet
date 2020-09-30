@@ -51,21 +51,24 @@ def pypinyin_g2p_phone(text) -> List[str]:
     return phones
 
 class espeak_g2p:
-    def __init__(self, lang: str = 'en', arpabet: bool = False):
+    def __init__(self, lang: str = 'en', arpabet: bool = False, remove_stress_marks: bool = False):
         self.lang = lang
+        self.remove_stress_marks = remove_stress_marks
         self.arpabet = arpabet
 
     def __call__(self, text) -> List[str]: 
-        import subprocess
-        proc = subprocess.run(['espeak-ng', '-xqv', self.lang, 'espeak', '--sep=_', '--ipa' if self.arpabet else ''], input=text, capture_output=True)
+        import subprocess, re 
+        proc = subprocess.run(['espeak-ng', '-xqv', self.lang, '--sep=_'] + (['--ipa'] if self.arpabet else []), text=True, input=text, capture_output=True)
         if proc.returncode != 0:
             raise
-        phones = proc.stdout
+        phones = re.sub(r'_?\(\w+\)_?', '', proc.stdout) # remove language switch markers
         if self.arpabet:
             from ipapy.arpabetmapper import ARPABETMapper
-            phones = ARPABETMapper().map_unicode_string(proc.stdout, ignore=True, return_as_list=True) 
+            phones = ARPABETMapper().map_unicode_string(phones, ignore=True, return_as_list=True) # not yet support stress marks
             return phones
-        return phones.replace(' ', '_').split('_')
+        if self.remove_stress_marks:
+            phones = re.sub(r'[\':,]', '', phones) # remove stress marks
+        return list(filter(lambda s: s.strip(), phones.replace(' ', '_').split('_')))
 
 
 class G2p_en:
