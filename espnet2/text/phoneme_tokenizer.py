@@ -56,6 +56,7 @@ class espeak_g2p:
         self.arpabet = arpabet
 
     def __call__(self, text) -> List[str]: 
+        import subprocess
         proc = subprocess.run(['espeak-ng', '-xqv', self.lang, 'espeak', '--sep=_', '--ipa' if self.arpabet else ''], input=text, capture_output=True)
         if proc.returncode != 0:
             raise
