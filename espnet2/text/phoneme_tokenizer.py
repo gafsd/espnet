@@ -61,13 +61,16 @@ class espeak_g2p:
         proc = subprocess.run(['espeak-ng', '-xqv', self.lang, '--sep=_'] + (['--ipa'] if self.arpabet else []), text=True, input=text, capture_output=True)
         if proc.returncode != 0:
             raise
-        phones = re.sub(r'_?\(\w+\)_?', '', proc.stdout) # remove language switch markers
+        phones = re.sub(r'_+', '_',  proc.stdout.strip().replace('\n', ' ').replace('  ', ' ')) # collapse orphaned phonemes
+        phones = re.sub(r'_ ', ' ', phones)
+        phones = re.sub(r'_?\(\w+\)_?', '', phones).strip() # remove language switch markers
         if self.arpabet:
+            phones = re.sub(r'[\'ˌˈ-]', '', phones) # ipapy not yet support stress marks for arpabet
             from ipapy.arpabetmapper import ARPABETMapper
-            phones = ARPABETMapper().map_unicode_string(phones, ignore=True, return_as_list=True) # not yet support stress marks
+            phones = ARPABETMapper().map_unicode_string(phones, ignore=True, return_as_list=True) 
             return phones
         if self.remove_stress_marks:
-            phones = re.sub(r'[\':,]', '', phones) # remove stress marks
+            phones = re.sub(r'[\':,-]', '', phones) 
         return list(filter(lambda s: s.strip(), phones.replace(' ', '_').split('_')))
 
 
