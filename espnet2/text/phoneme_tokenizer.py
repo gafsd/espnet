@@ -50,6 +50,22 @@ def pypinyin_g2p_phone(text) -> List[str]:
     ]
     return phones
 
+class espeak_g2p:
+    def __init__(self, lang: str = 'en', arpabet: bool = False):
+        self.lang = lang
+        self.arpabet = arpabet
+
+    def __call__(self, text) -> List[str]: 
+        proc = subprocess.run(['espeak-ng', '-xqv', self.lang, 'espeak', '--sep=_', '--ipa' if self.arpabet else ''], input=text, capture_output=True)
+        if proc.returncode != 0:
+            raise
+        phones = proc.stdout
+        if self.arpabet:
+            from ipapy.arpabetmapper import ARPABETMapper
+            phones = ARPABETMapper().map_unicode_string(proc.stdout, ignore=True, return_as_list=True) 
+            return phones
+        return phones.replace(' ', '_').split('_')
+
 
 class G2p_en:
     """On behalf of g2p_en.G2p.
@@ -96,6 +112,12 @@ class PhonemeTokenizer(AbsTokenizer):
             self.g2p = pypinyin_g2p
         elif g2p_type == "pypinyin_g2p_phone":
             self.g2p = pypinyin_g2p_phone
+        elif g2p_type.startswith('espeak_arpabet'):
+            lang = g2p_type.split('_')[2] if len(g2p_type.split('_')) > 2 else 'fr-fr'
+            self.g2p = espeak_g2p(arpabet=True, lang=lang)
+        elif g2p_type.startswith('espeak'):
+            lang = g2p_type.split('_')[1] if '_' in g2p_type else 'fr-fr'
+            self.g2p = espeak_g2p(lang=lang)
         else:
             raise NotImplementedError(f"Not supported: g2p_type={g2p_type}")
 

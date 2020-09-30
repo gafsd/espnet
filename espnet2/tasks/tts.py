@@ -188,6 +188,8 @@ class TTSTask(AbsTask):
                 "pyopenjtalk_kana",
                 "pypinyin_g2p",
                 "pypinyin_g2p_phone",
+                "espeak",
+                "espeak_arpabet",
             ],
             default=None,
             help="Specify g2p method if --token_type=phn",

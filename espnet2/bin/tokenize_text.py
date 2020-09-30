@@ -76,7 +76,7 @@ def tokenize(
     cutoff: int,
     add_symbol: List[str],
     cleaner: Optional[str],
-    g2p: Optional[str],
+    g2p: Optional[str], 
 ):
     assert check_argument_types()
 
@@ -222,7 +222,7 @@ def get_parser() -> argparse.ArgumentParser:
         choices=[None, "tacotron", "jaconv", "vietnamese"],
         default=None,
         help="Apply text cleaning",
-    )
+    ) 
     parser.add_argument(
         "--g2p",
         type=str_or_none,
@@ -234,6 +234,8 @@ def get_parser() -> argparse.ArgumentParser:
             "pyopenjtalk_kana",
             "pypinyin_g2p",
             "pypinyin_g2p_phone",
+            "espeak",
+            "espeak_arpabet",
         ],
         default=None,
         help="Specify g2p method if --token_type=phn",
